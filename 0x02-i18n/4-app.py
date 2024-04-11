@@ -19,18 +19,19 @@ app.url_map.strict_slashes = False
 babel = Babel(app)
 
 
-@babel.localeselector()
+@babel.localeselector
 def get_locale() -> str:
-    """Retrieves the locale for a web page.
-    """
-    queries = request.query_string.decode('utf-8').split('&')
-    query_table = dict(map(
-        lambda x: (x if '=' in x else '{}='.format(x)).split('='),
-        queries,
-    ))
-    if 'locale' in query_table:
-        if query_table['locale'] in app.config["LANGUAGES"]:
-            return query_table['locale']
+    """Retrieves the locale for a web page."""
+    # Check if the 'locale' parameter is present in the request URL
+    if 'locale' in request.args:
+        # Retrieve the value of the 'locale' parameter
+        requested_locale = request.args['locale']
+        # Check if the requested locale is supported
+        if requested_locale in app.config["LANGUAGES"]:
+            return requested_locale
+    
+    # If the 'locale' parameter is not present or its value is not supported,
+    # resort to the previous default behavior
     return request.accept_languages.best_match(app.config["LANGUAGES"])
 
 
@@ -42,4 +43,4 @@ def get_index() -> str:
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000)
+    app.run(host='0.0.0.0', port=5000)
